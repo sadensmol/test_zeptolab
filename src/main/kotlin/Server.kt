@@ -7,6 +7,8 @@ import io.netty.channel.ChannelPipeline
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.handler.codec.DelimiterBasedFrameDecoder
+import io.netty.handler.codec.Delimiters
 import io.netty.handler.codec.string.LineEncoder
 import io.netty.handler.codec.string.StringDecoder
 
@@ -42,6 +44,7 @@ class Server(private val chatService: ChatService) {
                         override fun initChannel(ch: SocketChannel) {
                             val pipeline: ChannelPipeline = ch.pipeline()
                             pipeline.addLast(LineEncoder())
+                            pipeline.addLast("framer", DelimiterBasedFrameDecoder(8192, * Delimiters.lineDelimiter()))
                             pipeline.addLast(StringDecoder())
                             pipeline.addLast(ServerHandler(chatService))
                         }
