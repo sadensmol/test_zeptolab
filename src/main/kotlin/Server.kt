@@ -1,14 +1,15 @@
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.Channel
-import io.netty.channel.ChannelId
+import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.ChannelPipeline
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.handler.codec.string.LineEncoder
 import io.netty.handler.codec.string.StringDecoder
-import io.netty.handler.codec.string.StringEncoder
+
 
 object Configuration {
     const val port = 8080
@@ -16,9 +17,7 @@ object Configuration {
     const val maxUsersPerChannel = 10
 }
 
-class Server {
-    private val processor = MessageProcessor()
-
+class Server(private val chatService: ChatService) {
     private val boss = NioEventLoopGroup()
     private val workers = NioEventLoopGroup()
     private var ch: Channel? = null
@@ -42,9 +41,9 @@ class Server {
                         @Throws(Exception::class)
                         override fun initChannel(ch: SocketChannel) {
                             val pipeline: ChannelPipeline = ch.pipeline()
+                            pipeline.addLast(LineEncoder())
                             pipeline.addLast(StringDecoder())
-                            pipeline.addLast(StringEncoder())
-                            pipeline.addLast(ChatHandler(channelProcessingService = processor))
+                            pipeline.addLast(ServerHandler(chatService))
                         }
                     })
 
@@ -56,12 +55,13 @@ class Server {
         }
     }
 
-    suspend fun hasUser(userName: String): Boolean {
-        return processor.hasUser(userName)
+    fun hasUser(userName: String): Boolean {
+        return chatService.hasUser(userName)
+    }
+
+    fun hasUserInChannel(userName: String, channelName: String): Boolean {
+        return chatService.hasUserInChannel(userName, channelName)
     }
 }
 
 
-fun main() {
-    Server().start()
-}

@@ -1,3 +1,5 @@
+package domain
+
 import java.time.LocalDateTime
 
 enum class Messages(val message: String) {
@@ -8,7 +10,7 @@ enum class Messages(val message: String) {
     CHANNELS("/list"),
     USERS("/users")
 }
-data class Message(
+sealed class Message(
     val date: LocalDateTime = LocalDateTime.now(),
     val sentBy: User,
     val content: String
@@ -19,5 +21,5 @@ data class Message(
         else -1
     }
 
-    override fun toString(): String = "${sentBy.login}: $content at $date"
+    override fun toString(): String = "${sentBy.name}: $content at $date"
 }

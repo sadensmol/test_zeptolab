@@ -61,9 +61,19 @@ class Client {
     }
 
     internal class ClientHandler : SimpleChannelInboundHandler<String>() {
+        override fun channelActive(ctx: ChannelHandlerContext) {
+            println("client: client ${ctx.channel().id()} connected!")
+            super.channelActive(ctx)
+        }
+
+        override fun channelInactive(ctx: ChannelHandlerContext) {
+            println("client: client ${ctx.channel().id()} disconnected!")
+            super.channelInactive(ctx)
+        }
+
         @Throws(java.lang.Exception::class)
         override fun channelRead0(ctx: ChannelHandlerContext, msg: String) {
-            println("received: $msg")
+            println("client: $msg")
         }
     }
 
