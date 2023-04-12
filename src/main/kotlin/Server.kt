@@ -1,6 +1,5 @@
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.Channel
-import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.ChannelPipeline
@@ -46,7 +45,7 @@ class Server(private val chatService: ChatService) {
                             pipeline.addLast(LineEncoder())
                             pipeline.addLast("framer", DelimiterBasedFrameDecoder(8192, * Delimiters.lineDelimiter()))
                             pipeline.addLast(StringDecoder())
-                            pipeline.addLast(ServerHandler(chatService))
+                            pipeline.addLast(ChatHandler(chatService))
                         }
                     })
 

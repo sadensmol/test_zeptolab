@@ -48,10 +48,16 @@ assignment).
 used patterns, points of improvements or any other info you want to add to your solution but you have to cut out from implementation due to MVP/PoC restrictions.
 
 
-# Performance testing
-## Installing tools
+# How to start
 
 ```shell
-go install github.com/codesenberg/bombardier@latest
+./gradlew run
 ```
 
+
+# Implementation details and further improvements
+
+App architecture is quite extensible - to add new commands you need to add new classes and add them into the main service.  
+Same for external ports - specific repository implementation is easy to add.
+I decided to store user and channel information in the channel attributes in this test, but overall for big chats such information 
+is stored on the server side. 

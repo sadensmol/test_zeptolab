@@ -3,6 +3,11 @@ val kotlinVersion = "1.80.20"
 
 plugins {
     kotlin("jvm") version "1.8.20"
+    id("application")
+}
+
+application {
+    mainClass.set("ApplicationKt")
 }
 
 repositories {

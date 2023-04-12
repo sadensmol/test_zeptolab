@@ -15,7 +15,6 @@ class Login(chatService: ChatService) : AbstractCommand<LoginChatRequest>("login
     override fun tryParse(input: String): Pair<LoginChatRequest?, Error?>? {
         if (!input.startsWith("/$command")) return null
 
-        //todo add error check here!
         val split = input.split(" ")
 
         if (split.size < 3) return Pair(null, ParseError("use /login <user_name> <password>"))
@@ -31,7 +30,7 @@ class Login(chatService: ChatService) : AbstractCommand<LoginChatRequest>("login
         if (possibleUser != null) {
             if (possibleUser.check(req.password)) {
                 ctx.channel().writeAndFlush("welcome again, ${req.name}!")
-                possibleUser.currentChannel?.let {
+                possibleUser.lastChannel?.let {
                     chatService.executeRequest(ctx, "/join ${it.name}")
                 }
             } else ctx.channel().writeAndFlush("wrong password for ${req.name}! ")

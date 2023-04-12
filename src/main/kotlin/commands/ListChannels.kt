@@ -20,12 +20,12 @@ class ListChannels(chatService: ChatService) : AbstractCommand<EmptyChatRequest>
 
     override suspend fun process(ctx: ChannelHandlerContext, req: EmptyChatRequest): Boolean {
         if (!ctx.channel().hasAttr(ATTRIBUTE_UN)) {
-            ctx.writeAndFlush("please login first!")
+            ctx.channel().writeAndFlush("please login first!")
             return false
         }
-        ctx.writeAndFlush("available channels:")
+        ctx.channel().writeAndFlush("available channels:")
         chatService.getAllChannels().map { it.name }.toSet().sorted().forEach {
-            ctx.writeAndFlush(it)
+            ctx.channel().writeAndFlush(it)
         }
         return true
     }

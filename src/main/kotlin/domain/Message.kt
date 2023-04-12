@@ -2,18 +2,10 @@ package domain
 
 import java.time.LocalDateTime
 
-enum class Messages(val message: String) {
-    LOGIN("/login"),
-    JOIN("/join"),
-    LEAVE("/leave"),
-    DISCONNECT("/disconnect"),
-    CHANNELS("/list"),
-    USERS("/users")
-}
-sealed class Message(
-    val date: LocalDateTime = LocalDateTime.now(),
-    val sentBy: User,
-    val content: String
+class Message(
+    private val date: LocalDateTime = LocalDateTime.now(),
+    private val sentBy: User,
+    private val content: String
 ) : Comparable<Message> {
     override fun compareTo(other: Message): Int {
         return if (this.date.isEqual(other.date)) 0
@@ -21,5 +13,5 @@ sealed class Message(
         else -1
     }
 
-    override fun toString(): String = "${sentBy.name}: $content at $date"
+    override fun toString(): String = "${sentBy.name}: $content"
 }

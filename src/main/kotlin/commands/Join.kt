@@ -21,8 +21,6 @@ class Join(chatService: ChatService) : AbstractCommand<JoinChatRequest>("join", 
         return Pair(JoinChatRequest(split[1]),null)
     }
 
-
-    // todo add ok idiom
     override suspend fun process(ctx: ChannelHandlerContext, req: JoinChatRequest): Boolean {
         if (!ctx.channel().hasAttr(ATTRIBUTE_UN)) {
             ctx.channel().writeAndFlush("please log in first!")
@@ -45,18 +43,16 @@ class Join(chatService: ChatService) : AbstractCommand<JoinChatRequest>("join", 
                 maxUsers = Configuration.maxUsersPerChannel
             )
         )
-        user.currentChannel?.removeUser(user)
-        user.currentChannel = curCh
+
         if (!curCh.addUser(user)) { //max users limit reached
-            ctx.writeAndFlush("channel is full!")
+            ctx.channel().writeAndFlush("channel is full!")
             return false
         }
         ctx.channel().writeAndFlush("joined ${req.name} channel!")
-
-        println("user $userName joined channel ${curCh.name}")
+        user.lastChannel = curCh
 
         curCh.getLastMessages(Configuration.amountOfMessages).forEach {
-            ctx.writeAndFlush(it)
+            ctx.channel().writeAndFlush(it.toString())
         }
 
         return true

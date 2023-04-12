@@ -9,11 +9,12 @@ data class Channel(
 
     fun getLastMessages(size: Int) = messages.toList().sorted().takeLast(size)
 
-    fun addUser(user: User): Boolean = synchronized(this) {
+    fun addMessage(msg: Message) = synchronized(messages) {
+        messages.add(msg)
+    }
+    fun addUser(user: User): Boolean = synchronized(users) {
         if (users.size >= maxUsers) return false
         users.add(user)
         return true
     }
-
-    fun removeUser(user: User) = synchronized(this) { users.remove(user) }
 }

@@ -18,10 +18,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 interface ICommand<out T> {
-    //todo add ok idiom or arrow.kt
     fun tryParse(input: String): Pair<T?, Error?>?
 
-    //todo add ok idiom or arrow.kt
     suspend fun process(ctx: ChannelHandlerContext, req: @UnsafeVariance T): Boolean
 }
 
@@ -62,10 +60,6 @@ class ChatService(
         return channelRepository.findById(chName)
     }
 
-    fun hasChannel(chName: String): Boolean {
-        return findChannelByName(chName)?.let { true } ?: false
-    }
-
     fun addChannel(ch: Channel): Channel {
         channelRepository.save(ch)
         return ch
@@ -93,7 +87,6 @@ class ChatService(
 
     fun executeRequest(ctx: ChannelHandlerContext, msg: String) {
         findAppropriate(msg)?.let { (cmd, msg, err) ->
-
             err?.let {
                 ctx.channel().writeAndFlush("error: ${err.message}")
                 return
@@ -107,6 +100,6 @@ class ChatService(
             runBlocking {
                 cmd.process(ctx, msg) //fixme add proper error handling
             }
-        } ?: ctx.writeAndFlush("not supported!")
+        } ?: ctx.channel().writeAndFlush("not supported!")
     }
 }

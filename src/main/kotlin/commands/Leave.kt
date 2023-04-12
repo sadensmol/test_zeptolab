@@ -19,13 +19,6 @@ class Leave(chatService: ChatService) : AbstractCommand<EmptyChatRequest>("leave
     override suspend fun process(ctx: ChannelHandlerContext, req: EmptyChatRequest): Boolean {
         if (!ctx.channel().hasAttr(ATTRIBUTE_UN)) return true
 
-
-        val userName = ctx.channel().attr(ATTRIBUTE_UN).get()
-        val user = chatService.findUserByName(userName)
-
-        user?.let {
-            user.currentChannel = null
-        }
         ctx.channel().attr(ATTRIBUTE_CN).set(null)
         ctx.channel().writeAndFlush("exited channel!")
 

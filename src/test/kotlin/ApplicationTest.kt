@@ -4,12 +4,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -248,22 +245,60 @@ internal class ApplicationTest {
 
     @Test
     fun `should send message from one user to another`() = runBlocking {
-//        val cl1 = Client()
-//        cl1.start()
-//        val userName1 = UUID.randomUUID().toString()
-//        cl1.write("/login $userName1 password")
-//        Thread.sleep(1000)
-//        val channelName = UUID.randomUUID().toString()
-//        cl1.write("/join $channelName")
-//        Thread.sleep(1000)
-//        assertTrue(server.hasUserInChannel(userName, channelName))
-//
-//        cl.write("test message 12345!!!")
-//        Thread.sleep(1000)
-//
-//        cl.stop()
+        val cl = Client()
+        loginAndJoin(cl, "test", "testch")
+        val cl2 = Client()
+        loginAndJoin(cl2, "test2", "testch")
+
+        cl.write("test message 12345!!!")
+        cl2.write("test2 message 12345!!!")
+
+        Thread.sleep(1000)
+
+        assertEquals("""connected!connected!
+            |user test logged in!
+            |joined testch channel!
+            |test2: test2 message 12345!!!
+            |""".trimMargin(), cl.getRespCache())
+
+        assertEquals("""connected!connected!
+            |user test2 logged in!
+            |joined testch channel!
+            |test: test message 12345!!!
+            |""".trimMargin(), cl2.getRespCache())
+
+
+        cl.stop()
+        cl2.stop()
     }
 
+    @Test
+    fun `should show last messages on login`() = runBlocking {
+        val cl = Client()
+        loginAndJoin(cl, "test", "testch")
+        cl.write("test message 12345!!!")
+        cl.write("test message 23456!!!")
+        cl.write("test message 34567!!!")
+        cl.stop()
+
+        Thread.sleep(1000)
+
+        val cl2 = Client()
+        cl2.start()
+        cl2.write("/login test password")
+        Thread.sleep(1000)
+
+        assertEquals("""connected!connected!
+            |welcome again, test!
+            |joined testch channel!
+            |test: test message 12345!!!
+            |test: test message 23456!!!
+            |test: test message 34567!!!
+            |""".trimMargin(), cl2.getRespCache())
+
+        Thread.sleep(1000)
+        cl2.stop()
+    }
 
 }
 

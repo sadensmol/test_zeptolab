@@ -19,13 +19,13 @@ class ListUsers(chatService: ChatService) : AbstractCommand<EmptyChatRequest>("u
 
     override suspend fun process(ctx: ChannelHandlerContext, req: EmptyChatRequest): Boolean {
         if (!ctx.channel().hasAttr(ATTRIBUTE_CN)) {
-            ctx.writeAndFlush("please join any channel first!")
+            ctx.channel().writeAndFlush("please join any channel first!")
             return false
         }
 
         val chName = ctx.channel().attr(ATTRIBUTE_CN).get()
 
-        ctx.writeAndFlush("available users:")
+        ctx.channel().writeAndFlush("available users:")
 
         chatService.activeNettyChannels.mapNotNull {
             if (it.hasAttr(ATTRIBUTE_UN) && it.hasAttr(ATTRIBUTE_CN) && it.attr(ATTRIBUTE_CN).get() == chName) {
@@ -34,7 +34,7 @@ class ListUsers(chatService: ChatService) : AbstractCommand<EmptyChatRequest>("u
                 null
             }
         }.toSet().sorted().forEach {
-            ctx.writeAndFlush(it)
+            ctx.channel().writeAndFlush(it)
         }
         return true
     }
