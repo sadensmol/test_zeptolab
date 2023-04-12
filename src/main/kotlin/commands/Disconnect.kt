@@ -3,15 +3,16 @@ package commands
 import AbstractCommand
 import ChatService
 import domain.EmptyChatRequest
+import domain.Error
 import io.netty.channel.ChannelHandlerContext
 
 
 
 class Disconnect(chatService: ChatService) : AbstractCommand<EmptyChatRequest>("disconnect",chatService) {
 
-    override fun tryParse(input: String): EmptyChatRequest? {
+    override fun tryParse(input: String): Pair<EmptyChatRequest?,Error?>? {
         if (!input.startsWith("/$command")) return null
-        return EmptyChatRequest
+        return Pair(EmptyChatRequest, null)
     }
 
 

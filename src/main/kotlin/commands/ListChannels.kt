@@ -4,27 +4,29 @@ import ATTRIBUTE_UN
 import AbstractCommand
 import ChatService
 import domain.EmptyChatRequest
+import domain.Error
 import io.netty.channel.ChannelHandlerContext
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toSet
 
 
 class ListChannels(chatService: ChatService) : AbstractCommand<EmptyChatRequest>("list", chatService) {
 
-    override fun tryParse(input: String): EmptyChatRequest? {
+    override fun tryParse(input: String): Pair<EmptyChatRequest?,Error?>? {
         if (!input.startsWith("/$command")) return null
-        return EmptyChatRequest
+        return Pair(EmptyChatRequest,null)
     }
 
 
     override suspend fun process(ctx: ChannelHandlerContext, req: EmptyChatRequest): Boolean {
         if (!ctx.channel().hasAttr(ATTRIBUTE_UN)) {
-            ctx.writeAndFlush("You need to login first!")
-            return true
+            ctx.writeAndFlush("please login first!")
+            return false
         }
-        ctx.writeAndFlush("Available channels:")
-        chatService.getAllChannels().collect{
-            ctx.writeAndFlush(it.name)}
+        ctx.writeAndFlush("available channels:")
+        chatService.getAllChannels().map { it.name }.toSet().sorted().forEach {
+            ctx.writeAndFlush(it)
+        }
         return true
     }
 

@@ -7,6 +7,7 @@ import commands.Login
 import commands.SendMessage
 import domain.Channel
 import domain.ChatRequest
+import domain.Error
 import domain.User
 import domain.repository.ICrudRepository
 import io.netty.channel.ChannelHandlerContext
@@ -18,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 
 interface ICommand<out T> {
     //todo add ok idiom or arrow.kt
-    fun tryParse(input: String): T?
+    fun tryParse(input: String): Pair<T?, Error?>?
 
     //todo add ok idiom or arrow.kt
     suspend fun process(ctx: ChannelHandlerContext, req: @UnsafeVariance T): Boolean
@@ -53,16 +54,8 @@ class ChatService(
         return userRepository.findById(name)
     }
 
-    fun hasUser(userName: String): Boolean {
-        return findUserByName(userName)?.let { true } ?: false
-    }
-
-    fun addUser(user: User) {
+    fun registerUser(user: User) {
         userRepository.save(user)
-    }
-
-    fun removeUserByName(name: String) {
-        userRepository.deleteById(name)
     }
 
     fun findChannelByName(chName: String): Channel? {
@@ -78,31 +71,42 @@ class ChatService(
         return ch
     }
 
-    fun hasUserInChannel(userName: String, chName: String): Boolean {
-        return findChannelByName(chName)?.findUser(userName)?.let { true } ?: false
-    }
-
     fun getAllChannels(): Flow<Channel> {
         return channelRepository.getAll()
     }
 
-    fun getAllUsers(): Flow<User> {
-        return userRepository.getAll()
-    }
 
-    private fun findAppropriate(input: String): Pair<ICommand<ChatRequest>, ChatRequest>? {
+    private fun findAppropriate(input: String): Triple<ICommand<ChatRequest>?, ChatRequest?, Error?>? {
         commands.forEach { cmd ->
-            cmd.tryParse(input)?.let { return Pair(cmd, it) }
+            val p = cmd.tryParse(input)
+
+            p?.second?.let {
+                return Triple(null, null, it)
+            }
+            p?.first?.let {
+                return Triple(cmd, it, null)
+            }
         }
 
         return null
     }
 
     fun executeRequest(ctx: ChannelHandlerContext, msg: String) {
-        findAppropriate(msg)?.let { (cmd, msg) ->
+        findAppropriate(msg)?.let { (cmd, msg, err) ->
+
+            err?.let {
+                ctx.channel().writeAndFlush("error: ${err.message}")
+                return
+            }
+
+            if (cmd == null || msg == null) {
+                ctx.channel().writeAndFlush("critical error occurred!!!")
+                return
+            }
+
             runBlocking {
                 cmd.process(ctx, msg) //fixme add proper error handling
             }
-        } ?: ctx.writeAndFlush("sorry, your request is wrong")
+        } ?: ctx.writeAndFlush("not supported!")
     }
 }

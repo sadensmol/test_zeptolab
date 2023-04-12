@@ -57,14 +57,6 @@ class Server(private val chatService: ChatService) {
             workers.shutdownGracefully()
         }
     }
-
-    fun hasUser(userName: String): Boolean {
-        return chatService.hasUser(userName)
-    }
-
-    fun hasUserInChannel(userName: String, channelName: String): Boolean {
-        return chatService.hasUserInChannel(userName, channelName)
-    }
 }
 
 
